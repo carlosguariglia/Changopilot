@@ -8,8 +8,8 @@
 
   // Estado global de la sesión
   const state = {
-    sbUrl: localStorage.getItem("sb_url") || "",
-    sbKey: localStorage.getItem("sb_key") || "",
+    sbUrl: localStorage.getItem("sb_url") || "https://hehaakhdmpdktsywywbb.supabase.co",
+    sbKey: localStorage.getItem("sb_key") || "sb_publishable_c0MtbIOA-3s_ky2L8AEPcQ_Gsfd2iv2",
     supabase: null,
     channel: null,
     offlineMode: false,

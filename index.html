@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IA: ¿Copiloto o Chango Automático?</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Resaltado de sintaxis (PrismJS) -->
+  <link id="prism-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <!-- Generador de QR -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- SDK Supabase Realtime -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="badge-live" id="conn-badge">● Conectando...</span>
+      <h1>IA: ¿Copiloto o Chango Automático?</h1>
+    </div>
+    <div class="topbar-actions">
+      <button id="btn-offline-toggle" class="btn-ghost hidden" title="Alternar modo proyector sin internet">
+        📡 Modo Online
+      </button>
+      <button id="btn-theme" class="btn-ghost" title="Cambiar tema claro/oscuro">
+        🌙 Oscuro
+      </button>
+    </div>
+  </header>
+
+  <main id="app">
+    <!-- ==================== VISTA ALUMNO: INGRESO ==================== -->
+    <section id="student-join" class="view card center-card hidden">
+      <h2>Sumate al Code Review</h2>
+      <p class="subtitle">Revisá los entregables del "Junior IA" antes de que pasen a producción.</p>
+      <form id="join-form">
+        <label for="alias-input">Tu Alias (máx. 15 caracteres)</label>
+        <input type="text" id="alias-input" maxlength="15" placeholder="Ej: TechLead_99" required autocomplete="off" />
+        <p id="alias-error" class="error-msg hidden"></p>
+
+        <label>¿En qué año estás?</label>
+        <div class="year-grid">
+          <button type="button" class="year-btn active" data-year="1er año">1er año</button>
+          <button type="button" class="year-btn" data-year="2do año">2do año</button>
+          <button type="button" class="year-btn" data-year="3er año">3er año</button>
+          <button type="button" class="year-btn" data-year="Otro">Otro</button>
+        </div>
+
+        <button type="submit" class="btn-primary full-width">Entrar a la Sala</button>
+      </form>
+      <div class="host-switch-wrap">
+        <a href="?host=true" class="link-muted">Abrir vista de Proyector (Host)</a>
+      </div>
+    </section>
+
+    <!-- ==================== VISTA ALUMNO: LOBBY / ESPERA ==================== -->
+    <section id="student-wait" class="view card center-card hidden">
+      <div class="player-pill" id="student-badge"></div>
+      <h2 id="wait-title">¡Ya estás adentro!</h2>
+      <p id="wait-subtitle" class="subtitle">Mirá la pantalla del proyector. El Tech Lead está por iniciar la primera ronda...</p>
+      <div class="score-box">
+        <span>Tu Puntaje</span>
+        <strong id="student-score">0 pts</strong>
+      </div>
+    </section>
+
+    <!-- ==================== VISTA ALUMNO: VOTACIÓN ==================== -->
+    <section id="student-vote" class="view card center-card hidden">
+      <div class="round-header-mobile">
+        <span class="tag" id="mobile-round-tag">Ronda 1/6</span>
+        <span class="timer-pill" id="mobile-timer">40s</span>
+      </div>
+      <h3 id="mobile-question-title">¿Dónde está la trampa?</h3>
+      <details class="code-spoiler">
+        <summary>Ver código en mi pantalla</summary>
+        <pre><code id="mobile-code" class="language-cpp"></code></pre>
+      </details>
+      <div id="mobile-options" class="options-stack"></div>
+      <div id="mobile-voted-feedback" class="voted-box hidden">
+        <p>✅ Voto enviado. Esperando cierre de ronda...</p>
+      </div>
+    </section>
+
+    <!-- ==================== VISTA ALUMNO: RESULTADO RONDA ==================== -->
+    <section id="student-result" class="view card center-card hidden">
+      <div id="result-status-icon" class="big-emoji">🎯</div>
+      <h2 id="result-status-title">¡Buen ojo de Tech Lead!</h2>
+      <p id="result-points-earned" class="points-delta">+850 pts</p>
+      <div class="moraleja-box">
+        <strong>Diagnóstico:</strong>
+        <p id="mobile-moraleja"></p>
+      </div>
+      <div class="score-box">
+        <span>Puntaje Acumulado</span>
+        <strong id="student-score-after">0 pts</strong>
+      </div>
+    </section>
+
+    <!-- ==================== VISTA HOST (PROYECTOR): LOBBY ==================== -->
+    <section id="host-lobby" class="view host-grid hidden">
+      <div class="card qr-panel">
+        <span class="tag">Escaneá para participar</span>
+        <h2>Unite a la Auditoría</h2>
+        <div id="qrcode" class="qr-box"></div>
+        <p id="join-url-text" class="url-caption"></p>
+        <button id="btn-config-supabase" class="btn-ghost small">⚙️ Configurar Supabase</button>
+      </div>
+      <div class="card players-panel">
+        <div class="panel-header">
+          <h2>Equipo Conectado (<span id="player-count">0</span>)</h2>
+          <button id="btn-start-game" class="btn-primary">Iniciar Ronda 1 ▶</button>
+        </div>
+        <p class="hint">Pasá el cursor sobre un alias para moderar/expulsar si hace falta.</p>
+        <div id="lobby-players-list" class="players-cloud"></div>
+      </div>
+    </section>
+
+    <!-- ==================== VISTA HOST (PROYECTOR): RONDA ACTIVA ==================== -->
+    <section id="host-question" class="view host-round-layout hidden">
+      <div class="card code-panel">
+        <div class="round-meta">
+          <span class="tag" id="host-category">Algoritmos 1 • C++</span>
+          <span class="round-counter" id="host-round-num">Ronda 1 de 6</span>
+        </div>
+        <div class="prompt-bubble">
+          <span class="prompt-label">💬 Prompt enviado a la IA:</span>
+          <p id="host-prompt"></p>
+        </div>
+        <pre class="host-pre"><code id="host-code" class="language-cpp"></code></pre>
+      </div>
+
+      <div class="card vote-panel">
+        <div class="timer-header">
+          <div class="timer-circle" id="host-timer">40</div>
+          <div class="vote-stats">
+            <strong id="votes-count">0 / 0</strong>
+            <span>votos recibidos</span>
+          </div>
+          <button id="btn-reveal" class="btn-primary">Cerrar y Revelar</button>
+        </div>
+        <h3 id="host-question-text" class="question-prompt"></h3>
+        <div id="host-options-list" class="host-options"></div>
+      </div>
+    </section>
+
+    <!-- ==================== VISTA HOST (PROYECTOR): REVELACIÓN + RANKING ==================== -->
+    <section id="host-reveal" class="view host-round-layout hidden">
+      <div class="card code-panel">
+        <span class="tag success">Autopsia del Entregable</span>
+        <h2 id="reveal-question-text"></h2>
+        <div id="reveal-bars" class="bars-container"></div>
+        <div class="moraleja-highlight">
+          <h3>🧠 Criterio del Analista (Moraleja):</h3>
+          <p id="host-moraleja"></p>
+        </div>
+      </div>
+
+      <div class="card leaderboard-panel">
+        <div class="panel-header">
+          <h2>🏆 Top 5 Auditores</h2>
+          <button id="btn-next-round" class="btn-primary">Siguiente Ronda ▶</button>
+        </div>
+        <ol id="leaderboard-list" class="ranking-list"></ol>
+
+        <h3>📊 Promedio por Año</h3>
+        <div id="year-ranking-list" class="year-bars"></div>
+      </div>
+    </section>
+
+    <!-- ==================== VISTA PODIO FINAL ==================== -->
+    <section id="podium-view" class="view card center-card wide-card hidden">
+      <span class="tag">Code Review Finalizado</span>
+      <h2>🏆 Podio de Tech Leads</h2>
+      <div id="podium-container" class="podium-grid"></div>
+      <h3>🥇 Ranking Final por Año</h3>
+      <div id="final-year-ranking" class="year-bars"></div>
+      <div class="closing-banner">
+        <p><strong>Conclusión:</strong> La IA acelera el código, pero la responsabilidad y el criterio siguen siendo tuyos.</p>
+      </div>
+      <button id="btn-restart" class="btn-ghost host-only hidden">Reiniciar Sala</button>
+    </section>
+  </main>
+
+  <!-- Modal rápido para credenciales Supabase -->
+  <dialog id="supabase-modal" class="modal">
+    <form method="dialog" class="modal-box">
+      <h3>Conexión en Tiempo Real (Supabase)</h3>
+      <p class="subtitle">Pegá tu Project URL y Anon Key públicas para sincronizar celulares en vivo. Si lo dejás vacío, funciona en Modo Proyector Offline.</p>
+      <label>Supabase Project URL</label>
+      <input type="url" id="sb-url-input" placeholder="https://xxxx.supabase.co" />
+      <label>Supabase Anon Public Key</label>
+      <input type="text" id="sb-key-input" placeholder="eyJhbGciOiJIUzI1NiIs..." />
+      <div class="modal-actions">
+        <button type="button" id="btn-close-modal" class="btn-ghost">Cancelar</button>
+        <button type="button" id="btn-save-supabase" class="btn-primary">Guardar y Conectar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="questions.js"></script>
+  <script src="profanity-filter.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

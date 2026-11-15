@@ -104,6 +104,7 @@
         .on("broadcast", { event: "kick_player" }, ({ payload }) => {
           if (!isHost && state.me && state.me.id === payload.playerId) {
             alert("Tu alias fue moderado por el presentador. Ingresá con otro nombre.");
+            sessionStorage.removeItem("changopilot_me");
             state.me = null;
             showView("student-join");
           }
@@ -428,6 +429,7 @@
         confirmedByHost: false
       };
 
+      sessionStorage.setItem("changopilot_me", JSON.stringify(state.me));
       $("student-badge").textContent = `${state.me.alias} • ${state.me.year}`;
       sendBroadcast("player_join", state.me);
       showView("student-wait");
@@ -441,6 +443,26 @@
         sendBroadcast("player_join", state.me);
       }, 2500);
     });
+
+    // Recuperar sesión si recargó la pestaña
+    const savedMe = sessionStorage.getItem("changopilot_me");
+    if (savedMe) {
+      try {
+        state.me = JSON.parse(savedMe);
+        $("student-badge").textContent = `${state.me.alias} • ${state.me.year}`;
+        sendBroadcast("player_join", state.me);
+        showView("student-wait");
+      } catch (_) {
+        sessionStorage.removeItem("changopilot_me");
+      }
+    }
+
+    // Re-sincronizar apenas desbloquea la pantalla o vuelve a la pestaña
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && state.me) {
+        sendBroadcast("player_join", state.me);
+      }
+    });
   }
 
   function syncStudentWithHost(payload) {
@@ -449,6 +471,7 @@
     if (payload.players && payload.players[state.me.id]) {
       state.me.score = payload.players[state.me.id].score;
       state.me.confirmedByHost = true;
+      sessionStorage.setItem("changopilot_me", JSON.stringify(state.me));
     }
 
     if (payload.phase === "LOBBY") {

@@ -20,7 +20,7 @@
     players: {}, // { [id]: { id, alias, year, score } }
     votes: {},   // { [playerId]: { optionIndex, timeLeft } }
     kickedIds: new Set(),
-    me: null     // { id, alias, year, score, votedOption, lastDelta }
+    me: null     // { id, alias, year, score, votedOption, confirmedByHost }
   };
 
   const $ = (id) => document.getElementById(id);
@@ -73,17 +73,23 @@
 
     try {
       state.supabase = window.supabase.createClient(state.sbUrl, state.sbKey);
-      state.channel = state.supabase.channel("isft151-code-review", {
-        config: { broadcast: { self: true } }
+      state.channel = state.supabase.channel("changopilot-room", {
+        config: { broadcast: { self: true, ack: true } }
       });
 
       state.channel
         .on("broadcast", { event: "player_join" }, ({ payload }) => {
-          if (!isHost || state.kickedIds.has(payload.id)) return;
+          console.log("[Changopilot] player_join recibido:", payload);
+          if (!isHost || !payload || state.kickedIds.has(payload.id)) return;
           if (!state.players[payload.id]) {
-            state.players[payload.id] = { ...payload, score: 0 };
+            state.players[payload.id] = {
+              id: payload.id,
+              alias: payload.alias,
+              year: payload.year,
+              score: 0
+            };
+            renderLobbyPlayers();
           }
-          renderLobbyPlayers();
           broadcastRoomState();
         })
         .on("broadcast", { event: "player_vote" }, ({ payload }) => {
@@ -107,27 +113,30 @@
           syncStudentWithHost(payload);
         })
         .subscribe((status) => {
+          console.log("[Changopilot] Estado canal:", status);
           if (status === "SUBSCRIBED") {
             state.offlineMode = false;
             updateConnBadge("online", "● En Vivo (Supabase)");
             if (isHost) {
               $("btn-offline-toggle").classList.remove("hidden");
               $("btn-offline-toggle").textContent = "🟢 Online";
+              broadcastRoomState();
             } else if (state.me) {
               sendBroadcast("player_join", state.me);
             }
           }
         });
     } catch (err) {
-      console.error(err);
+      console.error("[Changopilot] Error Supabase:", err);
       state.offlineMode = true;
       updateConnBadge("offline", "● Error red (Modo Offline)");
     }
   }
 
-  function sendBroadcast(event, payload) {
+  async function sendBroadcast(event, payload) {
     if (state.channel && !state.offlineMode) {
-      state.channel.send({ type: "broadcast", event, payload });
+      const res = await state.channel.send({ type: "broadcast", event, payload });
+      console.log(`[Changopilot] Enviado ${event}:`, res);
     }
   }
 
@@ -387,6 +396,7 @@
   function initStudent() {
     showView("student-join");
     let selectedYear = "1er año";
+    let joinInterval = null;
 
     document.querySelectorAll(".year-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -414,12 +424,22 @@
         alias: check.cleanAlias,
         year: selectedYear,
         score: 0,
-        votedOption: null
+        votedOption: null,
+        confirmedByHost: false
       };
 
       $("student-badge").textContent = `${state.me.alias} • ${state.me.year}`;
       sendBroadcast("player_join", state.me);
       showView("student-wait");
+
+      clearInterval(joinInterval);
+      joinInterval = setInterval(() => {
+        if (!state.me || state.me.confirmedByHost || state.phase !== "LOBBY") {
+          clearInterval(joinInterval);
+          return;
+        }
+        sendBroadcast("player_join", state.me);
+      }, 2500);
     });
   }
 
@@ -428,6 +448,7 @@
 
     if (payload.players && payload.players[state.me.id]) {
       state.me.score = payload.players[state.me.id].score;
+      state.me.confirmedByHost = true;
     }
 
     if (payload.phase === "LOBBY") {

@@ -1,6 +1,7 @@
 (() => {
-  const APP_VERSION = "3.19";
+  const APP_VERSION = "3.21";
   const ROUND_SECONDS = 40;
+  const PLAYER_TIMEOUT_MS = 15000;
   const LETTERS = ["A", "B", "C", "D"];
   const HOST_ACCESS_KEY = "Chango2026";
   const FONOTIPIA_URL = "https://carlosguariglia.github.io/fonotipia/";
@@ -27,6 +28,7 @@
     isPractice: false,
     timeLeft: ROUND_SECONDS,
     timerId: null,
+    playerCleanupId: null,
     players: {}, // { [id]: { id, alias, year, score } }
     votes: {},   // { [playerId]: { optionIndex, timeLeft } }
     kickedIds: new Set(),
@@ -114,11 +116,13 @@
               id: payload.id,
               alias: payload.alias,
               year: payload.year,
-              score: 0
+              score: 0,
+              lastSeen: Date.now()
             };
           } else {
             state.players[payload.id].alias = payload.alias;
             state.players[payload.id].year = payload.year;
+            state.players[payload.id].lastSeen = Date.now();
           }
           renderLobbyPlayers();
           broadcastRoomState();
@@ -239,6 +243,8 @@
     $("btn-finalize").classList.remove("hidden");
     $("btn-finalize").addEventListener("click", showClosingView);
     $("btn-restart").addEventListener("click", () => window.location.reload());
+    clearInterval(state.playerCleanupId);
+    state.playerCleanupId = setInterval(cleanupInactivePlayers, 5000);
   }
 
   function renderLobbyPlayers() {
@@ -263,6 +269,24 @@
       });
       list.appendChild(chip);
     });
+  }
+
+  function cleanupInactivePlayers() {
+    if (!isHost || state.phase === "CLOSING") return;
+    const now = Date.now();
+    let removed = false;
+    Object.values(state.players).forEach((player) => {
+      if (player.lastSeen && now - player.lastSeen > PLAYER_TIMEOUT_MS) {
+        delete state.players[player.id];
+        delete state.votes[player.id];
+        removed = true;
+      }
+    });
+    if (removed) {
+      renderLobbyPlayers();
+      updateHostVoteCounter();
+      broadcastRoomState();
+    }
   }
 
   function startRound(index) {
@@ -500,6 +524,16 @@
     showView("student-join");
     let selectedYear = "1er año";
     let joinInterval = null;
+    const startJoinHeartbeat = () => {
+      clearInterval(joinInterval);
+      joinInterval = setInterval(() => {
+        if (!state.me || state.phase === "CLOSING") {
+          clearInterval(joinInterval);
+          return;
+        }
+        sendBroadcast("player_join", state.me);
+      }, 5000);
+    };
     $("btn-download-summary").addEventListener("click", () => {
       renderPrintSummary();
       window.print();
@@ -541,15 +575,7 @@
       $("student-badge").textContent = `${state.me.alias} • ${state.me.year}`;
       sendBroadcast("player_join", state.me);
       showView("student-wait");
-
-      clearInterval(joinInterval);
-      joinInterval = setInterval(() => {
-        if (!state.me || state.me.confirmedByHost || state.phase !== "LOBBY") {
-          clearInterval(joinInterval);
-          return;
-        }
-        sendBroadcast("player_join", state.me);
-      }, 2500);
+      startJoinHeartbeat();
     });
 
     // Recuperar sesión si recargó la pestaña
@@ -560,6 +586,7 @@
         $("student-badge").textContent = `${state.me.alias} • ${state.me.year}`;
         sendBroadcast("player_join", state.me);
         showView("student-wait");
+        startJoinHeartbeat();
       } catch (_) {
         sessionStorage.removeItem("changopilot_me");
       }
@@ -665,10 +692,10 @@
       $("wait-title").textContent = "¡Gracias por su participación!";
       $("wait-subtitle").textContent = "El criterio técnico se construye revisando, preguntando y haciéndose responsable.";
       $("student-score").textContent = `${state.me.score} pts`;
-      $("btn-download-summary").classList.add("hidden");
+      $("btn-download-summary").classList.remove("hidden");
       $("btn-skip-summary").classList.add("hidden");
       showView("student-wait");
-      showStudentFonotipiaInvite();
+      showStudentFonotipiaInvite(false);
     }
   }
 
@@ -680,9 +707,11 @@
     return newId;
   }
 
-  function showStudentFonotipiaInvite() {
-    $("btn-download-summary").classList.add("hidden");
-    $("btn-skip-summary").classList.add("hidden");
+  function showStudentFonotipiaInvite(hideSummaryActions = true) {
+    if (hideSummaryActions) {
+      $("btn-download-summary").classList.add("hidden");
+      $("btn-skip-summary").classList.add("hidden");
+    }
     $("student-fonotipia-invite").classList.remove("hidden");
     renderFonotipiaQr("student-fonotipia-qr");
   }

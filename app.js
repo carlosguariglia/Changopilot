@@ -1,8 +1,9 @@
 (() => {
-  const APP_VERSION = "3.14";
+  const APP_VERSION = "3.15";
   const ROUND_SECONDS = 40;
   const LETTERS = ["A", "B", "C", "D"];
   const HOST_ACCESS_KEY = "Chango2026";
+  const FONOTIPIA_URL = "https://carlosguariglia.github.io/fonotipia/";
 
   // Detectar si es vista Proyector (?host=true)
   const params = new URLSearchParams(window.location.search);
@@ -91,6 +92,18 @@
         .on("broadcast", { event: "player_join" }, ({ payload }) => {
           console.log("[Changopilot] player_join recibido:", payload);
           if (!isHost || !payload || state.kickedIds.has(payload.id)) return;
+          const duplicateAlias = Object.values(state.players).some(
+            (player) =>
+              player.id !== payload.id &&
+              aliasKey(player.alias) === aliasKey(payload.alias)
+          );
+          if (duplicateAlias) {
+            sendBroadcast("join_rejected", {
+              playerId: payload.id,
+              reason: "Ese alias ya está siendo utilizado en la sala."
+            });
+            return;
+          }
           if (!state.players[payload.id]) {
             state.players[payload.id] = {
               id: payload.id,
@@ -98,8 +111,11 @@
               year: payload.year,
               score: 0
             };
-            renderLobbyPlayers();
+          } else {
+            state.players[payload.id].alias = payload.alias;
+            state.players[payload.id].year = payload.year;
           }
+          renderLobbyPlayers();
           broadcastRoomState();
         })
         .on("broadcast", { event: "player_vote" }, ({ payload }) => {
@@ -118,6 +134,14 @@
             state.me = null;
             showView("student-join");
           }
+        })
+        .on("broadcast", { event: "join_rejected" }, ({ payload }) => {
+          if (isHost || !state.me || payload?.playerId !== state.me.id) return;
+          sessionStorage.removeItem("changopilot_me");
+          state.me = null;
+          $("alias-error").textContent = payload.reason || "No se pudo ingresar a la sala.";
+          $("alias-error").classList.remove("hidden");
+          showView("student-join");
         })
         .on("broadcast", { event: "room_state" }, ({ payload }) => {
           if (isHost) return;
@@ -201,7 +225,8 @@
         showFinalPodium();
       }
     });
-    $("btn-restart").classList.remove("hidden");
+    $("btn-finalize").classList.remove("hidden");
+    $("btn-finalize").addEventListener("click", showClosingView);
     $("btn-restart").addEventListener("click", () => window.location.reload());
   }
 
@@ -441,6 +466,13 @@
     broadcastRoomState();
   }
 
+  function showClosingView() {
+    state.phase = "CLOSING";
+    showView("host-closing");
+    renderFonotipiaQr("host-fonotipia-qr");
+    broadcastRoomState();
+  }
+
   function broadcastRoomState(deltas = {}) {
     sendBroadcast("room_state", {
       phase: state.phase,
@@ -460,7 +492,9 @@
     $("btn-download-summary").addEventListener("click", () => {
       renderPrintSummary();
       window.print();
+      showStudentFonotipiaInvite();
     });
+    $("btn-skip-summary").addEventListener("click", showStudentFonotipiaInvite);
 
     document.querySelectorAll(".year-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -484,7 +518,7 @@
 
       errEl.classList.add("hidden");
       state.me = {
-        id: "p_" + Math.random().toString(36).slice(2, 10),
+        id: getPersistentPlayerId(),
         alias: check.cleanAlias,
         year: selectedYear,
         score: 0,
@@ -610,7 +644,45 @@
       $("wait-subtitle").textContent = "Mirá el podio final en la pantalla del aula.";
       $("student-score").textContent = `${state.me.score} pts`;
       $("btn-download-summary").classList.remove("hidden");
+      $("btn-skip-summary").classList.remove("hidden");
+      $("student-fonotipia-invite").classList.add("hidden");
       showView("student-wait");
+    } else if (payload.phase === "CLOSING") {
+      state.phase = "CLOSING";
+      $("wait-title").textContent = "¡Gracias por su participación!";
+      $("wait-subtitle").textContent = "El criterio técnico se construye revisando, preguntando y haciéndose responsable.";
+      $("student-score").textContent = `${state.me.score} pts`;
+      $("btn-download-summary").classList.add("hidden");
+      $("btn-skip-summary").classList.add("hidden");
+      showView("student-wait");
+      showStudentFonotipiaInvite();
+    }
+  }
+
+  function getPersistentPlayerId() {
+    const savedId = localStorage.getItem("changopilot_player_id");
+    if (savedId) return savedId;
+    const newId = "p_" + Math.random().toString(36).slice(2, 10);
+    localStorage.setItem("changopilot_player_id", newId);
+    return newId;
+  }
+
+  function showStudentFonotipiaInvite() {
+    $("btn-download-summary").classList.add("hidden");
+    $("btn-skip-summary").classList.add("hidden");
+    $("student-fonotipia-invite").classList.remove("hidden");
+    renderFonotipiaQr("student-fonotipia-qr");
+  }
+
+  function renderFonotipiaQr(elementId) {
+    const qrElement = $(elementId);
+    qrElement.innerHTML = "";
+    if (typeof QRCode === "function") {
+      new QRCode(qrElement, {
+        text: FONOTIPIA_URL,
+        width: 180,
+        height: 180
+      });
     }
   }
 
@@ -678,6 +750,10 @@
         </article>
       `).join("")}
     `;
+  }
+
+  function aliasKey(alias) {
+    return String(alias || "").trim().toLocaleLowerCase();
   }
 
   function escapeHtml(str) {

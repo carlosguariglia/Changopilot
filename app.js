@@ -1,5 +1,5 @@
 (() => {
-  const APP_VERSION = "3.15";
+  const APP_VERSION = "3.16";
   const ROUND_SECONDS = 40;
   const LETTERS = ["A", "B", "C", "D"];
   const HOST_ACCESS_KEY = "Chango2026";

@@ -45,7 +45,7 @@ Durante la actividad, los participantes asumen el rol de **Tech Leads** y audita
 
 ### 1. Vista de Presentador (Proyector) vs. Alumnos (Celulares)
 * **Alumnos:** Acceden a la URL raíz (`https://<tu-usuario>.github.io/changopilot/`).
-* **Proyector (Host):** Accede agregando el parámetro `?host=true` (`https://<tu-usuario>.github.io/changopilot/?host=true`), donde se genera automáticamente el código QR para que el aula se conecte.
+* **Proyector (Host):** Accede agregando el parámetro `?host=true` (`https://<tu-usuario>.github.io/changopilot/?host=true`) e ingresando la clave del presentador. Allí se genera automáticamente el código QR para que el aula se conecte.
 
 ### 2. Prueba Local
 Desde la carpeta del proyecto, levantá un servidor estático vinculado a la red local:

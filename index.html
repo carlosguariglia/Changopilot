@@ -53,9 +53,6 @@
 
         <button type="submit" class="btn-primary full-width">Entrar a la Sala</button>
       </form>
-      <div class="host-switch-wrap">
-        <a href="?host=true" class="link-muted">Abrir vista de Proyector (Host)</a>
-      </div>
     </section>
 
     <!-- ==================== VISTA ALUMNO: LOBBY / ESPERA ==================== -->
@@ -68,6 +65,11 @@
         <strong id="student-score">0 pts</strong>
       </div>
       <button id="btn-download-summary" class="btn-primary full-width hidden">📄 Descargar resumen en PDF</button>
+    </section>
+
+    <section id="host-access-denied" class="view card center-card hidden">
+      <h2>Acceso al Host no autorizado</h2>
+      <p class="subtitle">Abrí la vista de Proyector con la clave correcta.</p>
     </section>
 
     <!-- ==================== VISTA ALUMNO: VOTACIÓN ==================== -->
@@ -189,6 +191,12 @@
     <section id="print-summary" class="print-summary hidden"></section>
   </main>
 
+  <footer class="app-footer">
+    <span>Diseñado por: Carlos Guariglia (2026)</span>
+    <span>carlosguariglia@gmail.com</span>
+    <span id="app-version">Version: ...</span>
+  </footer>
+
   <!-- Modal rápido para credenciales Supabase -->
   <dialog id="supabase-modal" class="modal">
     <form method="dialog" class="modal-box">
@@ -201,6 +209,20 @@
       <div class="modal-actions">
         <button type="button" id="btn-close-modal" class="btn-ghost">Cancelar</button>
         <button type="button" id="btn-save-supabase" class="btn-primary">Guardar y Conectar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="host-access-modal" class="modal">
+    <form method="dialog" class="modal-box">
+      <h3>Acceso a la vista Host</h3>
+      <p class="subtitle">Ingresá la clave del presentador para abrir el proyector.</p>
+      <label for="host-key-input">Clave de acceso</label>
+      <input type="password" id="host-key-input" autocomplete="off" />
+      <p id="host-key-error" class="error-msg hidden"></p>
+      <div class="modal-actions">
+        <button type="button" id="btn-cancel-host-key" class="btn-ghost">Cancelar</button>
+        <button type="button" id="btn-submit-host-key" class="btn-primary">Ingresar</button>
       </div>
     </form>
   </dialog>

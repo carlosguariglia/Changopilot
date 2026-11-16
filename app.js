@@ -1,10 +1,18 @@
 (() => {
+  const APP_VERSION = "3.14";
   const ROUND_SECONDS = 40;
   const LETTERS = ["A", "B", "C", "D"];
+  const HOST_ACCESS_KEY = "Chango2026";
 
   // Detectar si es vista Proyector (?host=true)
   const params = new URLSearchParams(window.location.search);
-  const isHost = params.get("host") === "true";
+  const isHostRequest = params.get("host") === "true";
+  const savedHostAccess = sessionStorage.getItem("changopilot_host_access");
+  let isHost = isHostRequest && savedHostAccess === HOST_ACCESS_KEY;
+
+  if (isHost) {
+    sessionStorage.setItem("changopilot_host_access", HOST_ACCESS_KEY);
+  }
 
   // Estado global de la sesión
   const state = {
@@ -25,6 +33,7 @@
   };
 
   const $ = (id) => document.getElementById(id);
+  $("app-version").textContent = `Version: ${APP_VERSION}`;
 
   // ==================== TEMA LIGHT / DARK ====================
   const btnTheme = $("btn-theme");
@@ -519,6 +528,40 @@
     });
   }
 
+  function requestHostAccess() {
+    if (isHost) {
+      initHost();
+      return;
+    }
+
+    if (!isHostRequest) {
+      initStudent();
+      return;
+    }
+
+    const modal = $("host-access-modal");
+    const input = $("host-key-input");
+    const error = $("host-key-error");
+    modal.showModal();
+    $("btn-submit-host-key").addEventListener("click", () => {
+      if (input.value !== HOST_ACCESS_KEY) {
+        error.textContent = "La clave no es correcta.";
+        error.classList.remove("hidden");
+        input.select();
+        return;
+      }
+
+      isHost = true;
+      sessionStorage.setItem("changopilot_host_access", HOST_ACCESS_KEY);
+      modal.close();
+      initHost();
+    });
+    $("btn-cancel-host-key").addEventListener("click", () => {
+      modal.close();
+      showView("host-access-denied");
+    });
+  }
+
   function syncStudentWithHost(payload) {
     if (!state.me) return;
 
@@ -646,10 +689,6 @@
   }
 
   // ==================== INICIO ====================
-  if (isHost) {
-    initHost();
-  } else {
-    initStudent();
-  }
+  requestHostAccess();
   initSupabase();
 })();

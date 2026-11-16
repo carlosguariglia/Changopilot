@@ -1,5 +1,5 @@
 (() => {
-  const APP_VERSION = "3.21";
+  const APP_VERSION = "3.22";
   const ROUND_SECONDS = 40;
   const PLAYER_TIMEOUT_MS = 15000;
   const LETTERS = ["A", "B", "C", "D"];
@@ -522,7 +522,8 @@
   // ==================== LÓGICA DEL ALUMNO (MOBILE) ====================
   function initStudent() {
     showView("student-join");
-    let selectedYear = "1er año";
+    const savedProfile = loadStudentProfile();
+    let selectedYear = savedProfile?.year || "1er año";
     let joinInterval = null;
     const startJoinHeartbeat = () => {
       clearInterval(joinInterval);
@@ -540,6 +541,12 @@
       showStudentFonotipiaInvite();
     });
     $("btn-skip-summary").addEventListener("click", showStudentFonotipiaInvite);
+    if (savedProfile) {
+      $("alias-input").value = savedProfile.alias || "";
+      document.querySelectorAll(".year-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.year === selectedYear);
+      });
+    }
 
     document.querySelectorAll(".year-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -566,12 +573,13 @@
         id: getPersistentPlayerId(),
         alias: check.cleanAlias,
         year: selectedYear,
-        score: 0,
+        score: savedProfile?.score || 0,
         votedOption: null,
         confirmedByHost: false
       };
 
       sessionStorage.setItem("changopilot_me", JSON.stringify(state.me));
+      saveStudentProfile(state.me);
       $("student-badge").textContent = `${state.me.alias} • ${state.me.year}`;
       sendBroadcast("player_join", state.me);
       showView("student-wait");
@@ -642,6 +650,7 @@
       state.me.score = payload.players[state.me.id].score;
       state.me.confirmedByHost = true;
       sessionStorage.setItem("changopilot_me", JSON.stringify(state.me));
+      saveStudentProfile(state.me);
     }
 
     if (payload.phase === "LOBBY") {
@@ -705,6 +714,30 @@
     const newId = "p_" + Math.random().toString(36).slice(2, 10);
     localStorage.setItem("changopilot_player_id", newId);
     return newId;
+  }
+
+  function loadStudentProfile() {
+    try {
+      const savedProfile = JSON.parse(localStorage.getItem("changopilot_profile") || "null");
+      if (!savedProfile || typeof savedProfile.alias !== "string") return null;
+      return {
+        alias: savedProfile.alias,
+        year: typeof savedProfile.year === "string" ? savedProfile.year : "1er año",
+        score: Number.isFinite(savedProfile.score) ? savedProfile.score : 0
+      };
+    } catch (error) {
+      console.warn("[Changopilot] Perfil local inválido:", error);
+      localStorage.removeItem("changopilot_profile");
+      return null;
+    }
+  }
+
+  function saveStudentProfile(student) {
+    localStorage.setItem("changopilot_profile", JSON.stringify({
+      alias: student.alias,
+      year: student.year,
+      score: student.score
+    }));
   }
 
   function showStudentFonotipiaInvite(hideSummaryActions = true) {

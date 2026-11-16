@@ -15,6 +15,7 @@
     offlineMode: false,
     phase: "LOBBY", // LOBBY | QUESTION | REVEAL | PODIUM
     roundIndex: 0,
+    isPractice: false,
     timeLeft: ROUND_SECONDS,
     timerId: null,
     players: {}, // { [id]: { id, alias, year, score } }
@@ -180,10 +181,12 @@
       );
     });
 
-    $("btn-start-game").addEventListener("click", () => startRound(0));
+    $("btn-start-game").addEventListener("click", startPractice);
     $("btn-reveal").addEventListener("click", revealRound);
     $("btn-next-round").addEventListener("click", () => {
-      if (state.roundIndex + 1 < QUESTIONS.length) {
+      if (state.isPractice) {
+        startRound(0);
+      } else if (state.roundIndex + 1 < QUESTIONS.length) {
         startRound(state.roundIndex + 1);
       } else {
         showFinalPodium();
@@ -219,6 +222,7 @@
 
   function startRound(index) {
     state.roundIndex = index;
+    state.isPractice = false;
     state.phase = "QUESTION";
     state.votes = {};
     state.timeLeft = ROUND_SECONDS;
@@ -259,6 +263,47 @@
     }, 1000);
   }
 
+  function startPractice() {
+    state.roundIndex = 0;
+    state.isPractice = true;
+    state.phase = "QUESTION";
+    state.votes = {};
+    state.timeLeft = ROUND_SECONDS;
+
+    const q = PRACTICE_QUESTION;
+    showView("host-question");
+    $("host-category").textContent = q.category;
+    $("host-round-num").textContent = "Práctica";
+    $("host-prompt").textContent = `"${q.prompt}"`;
+
+    const codeEl = $("host-code");
+    codeEl.className = `language-${q.language}`;
+    codeEl.textContent = q.code;
+    if (window.Prism) Prism.highlightElement(codeEl);
+
+    $("host-question-text").textContent = q.question;
+    const optsContainer = $("host-options-list");
+    optsContainer.innerHTML = "";
+    q.options.forEach((opt, i) => {
+      const div = document.createElement("div");
+      div.className = "host-option-item";
+      div.innerHTML = `<span class="opt-letter">${LETTERS[i]}</span><span>${escapeHtml(opt)}</span>`;
+      optsContainer.appendChild(div);
+    });
+
+    updateHostVoteCounter();
+    broadcastRoomState();
+    clearInterval(state.timerId);
+    updateTimerUI();
+    state.timerId = setInterval(() => {
+      state.timeLeft--;
+      updateTimerUI();
+      if (state.timeLeft <= 0) {
+        revealRound();
+      }
+    }, 1000);
+  }
+
   function updateTimerUI() {
     const el = $("host-timer");
     el.textContent = state.timeLeft;
@@ -275,9 +320,10 @@
   }
 
   function revealRound() {
+    if (state.phase !== "QUESTION") return;
     clearInterval(state.timerId);
     state.phase = "REVEAL";
-    const q = QUESTIONS[state.roundIndex];
+    const q = state.isPractice ? PRACTICE_QUESTION : QUESTIONS[state.roundIndex];
 
     // Calcular puntajes
     const counts = [0, 0, 0, 0];
@@ -288,8 +334,9 @@
         counts[vote.optionIndex]++;
       }
       if (vote.optionIndex === q.correctIndex && state.players[playerId]) {
-        const speedBonus = Math.round((vote.timeLeft / ROUND_SECONDS) * 500);
-        const earned = 500 + speedBonus;
+        const earned = state.isPractice
+          ? 0
+          : 500 + Math.round((vote.timeLeft / ROUND_SECONDS) * 500);
         state.players[playerId].score += earned;
         deltas[playerId] = earned;
       } else {
@@ -301,7 +348,9 @@
     $("reveal-question-text").textContent = q.question;
     $("host-moraleja").textContent = q.moraleja;
     $("btn-next-round").textContent =
-      state.roundIndex + 1 < QUESTIONS.length ? "Siguiente Ronda ▶" : "Ver Podio Final 🏆";
+      state.isPractice || state.roundIndex + 1 < QUESTIONS.length
+        ? "Siguiente Ronda ▶"
+        : "Ver Podio Final 🏆";
 
     const totalVotes = Object.keys(state.votes).length || 1;
     const barsEl = $("reveal-bars");
@@ -387,6 +436,7 @@
     sendBroadcast("room_state", {
       phase: state.phase,
       roundIndex: state.roundIndex,
+      isPractice: state.isPractice,
       timeLeft: state.timeLeft,
       players: state.players,
       deltas
@@ -398,6 +448,10 @@
     showView("student-join");
     let selectedYear = "1er año";
     let joinInterval = null;
+    $("btn-download-summary").addEventListener("click", () => {
+      renderPrintSummary();
+      window.print();
+    });
 
     document.querySelectorAll(".year-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -478,18 +532,24 @@
       $("student-score").textContent = `${state.me.score} pts`;
       showView("student-wait");
     } else if (payload.phase === "QUESTION") {
-      const isNewRound = state.roundIndex !== payload.roundIndex || state.phase !== "QUESTION";
+      const isPractice = Boolean(payload.isPractice);
+      const isNewRound =
+        state.roundIndex !== payload.roundIndex ||
+        state.isPractice !== isPractice ||
+        state.phase !== "QUESTION";
       state.roundIndex = payload.roundIndex;
+      state.isPractice = isPractice;
       state.phase = "QUESTION";
 
       if (isNewRound) {
         state.me.votedOption = null;
-        renderMobileQuestion(payload.roundIndex, payload.timeLeft);
+        renderMobileQuestion(payload.roundIndex, payload.timeLeft, isPractice);
       }
       showView("student-vote");
     } else if (payload.phase === "REVEAL") {
+      clearInterval(state.timerId);
       state.phase = "REVEAL";
-      const q = QUESTIONS[payload.roundIndex];
+      const q = payload.isPractice ? PRACTICE_QUESTION : QUESTIONS[payload.roundIndex];
       const earned = (payload.deltas && payload.deltas[state.me.id]) || 0;
       const acertó = state.me.votedOption === q.correctIndex;
 
@@ -506,13 +566,16 @@
       $("wait-title").textContent = "¡Auditoria Finalizada!";
       $("wait-subtitle").textContent = "Mirá el podio final en la pantalla del aula.";
       $("student-score").textContent = `${state.me.score} pts`;
+      $("btn-download-summary").classList.remove("hidden");
       showView("student-wait");
     }
   }
 
-  function renderMobileQuestion(index, initialTime) {
-    const q = QUESTIONS[index];
-    $("mobile-round-tag").textContent = `Ronda ${index + 1}/${QUESTIONS.length}`;
+  function renderMobileQuestion(index, initialTime, isPractice) {
+    const q = isPractice ? PRACTICE_QUESTION : QUESTIONS[index];
+    $("mobile-round-tag").textContent = isPractice
+      ? "Práctica"
+      : `Ronda ${index + 1}/${QUESTIONS.length}`;
     $("mobile-question-title").textContent = q.question;
 
     const codeEl = $("mobile-code");
@@ -541,6 +604,7 @@
       btn.addEventListener("click", () => {
         if (state.me.votedOption !== null) return;
         state.me.votedOption = i;
+        sessionStorage.setItem("changopilot_me", JSON.stringify(state.me));
         optsEl.classList.add("hidden");
         $("mobile-voted-feedback").classList.remove("hidden");
         sendBroadcast("player_vote", {
@@ -551,6 +615,26 @@
       });
       optsEl.appendChild(btn);
     });
+  }
+
+  function renderPrintSummary() {
+    const summary = $("print-summary");
+    const alias = state.me ? escapeHtml(state.me.alias) : "Participante";
+    const score = state.me ? state.me.score : 0;
+    summary.innerHTML = `
+      <h1>Changopilot — Resumen de aprendizaje</h1>
+      <p class="summary-meta">${alias} · Puntaje final: ${score} pts</p>
+      ${QUESTIONS.map((q, index) => `
+        <article class="summary-question">
+          <h2>Ronda ${index + 1}: ${escapeHtml(q.category)}</h2>
+          <p>${escapeHtml(q.question)}</p>
+          <pre>${escapeHtml(q.code)}</pre>
+          <p class="summary-answer">Respuesta correcta: ${escapeHtml(q.options[q.correctIndex])}</p>
+          <p><strong>Explicación:</strong> ${escapeHtml(q.explanation || q.moraleja)}</p>
+          <p><strong>Moraleja:</strong> ${escapeHtml(q.moraleja)}</p>
+        </article>
+      `).join("")}
+    `;
   }
 
   function escapeHtml(str) {

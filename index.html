@@ -67,6 +67,7 @@
         <span>Tu Puntaje</span>
         <strong id="student-score">0 pts</strong>
       </div>
+      <button id="btn-download-summary" class="btn-primary full-width hidden">📄 Descargar resumen en PDF</button>
     </section>
 
     <!-- ==================== VISTA ALUMNO: VOTACIÓN ==================== -->
@@ -76,10 +77,10 @@
         <span class="timer-pill" id="mobile-timer">40s</span>
       </div>
       <h3 id="mobile-question-title">¿Dónde está la trampa?</h3>
-      <details class="code-spoiler">
-        <summary>Ver código en mi pantalla</summary>
+      <div class="code-spoiler">
+        <strong class="code-label">Código para revisar</strong>
         <pre><code id="mobile-code" class="language-cpp"></code></pre>
-      </details>
+      </div>
       <div id="mobile-options" class="options-stack"></div>
       <div id="mobile-voted-feedback" class="voted-box hidden">
         <p>✅ Voto enviado. Esperando cierre de ronda...</p>
@@ -113,7 +114,7 @@
       <div class="card players-panel">
         <div class="panel-header">
           <h2>Equipo Conectado (<span id="player-count">0</span>)</h2>
-          <button id="btn-start-game" class="btn-primary">Iniciar Ronda 1 ▶</button>
+          <button id="btn-start-game" class="btn-primary">Iniciar Práctica ▶</button>
         </div>
         <p class="hint">Pasá el cursor sobre un alias para moderar/expulsar si hace falta.</p>
         <div id="lobby-players-list" class="players-cloud"></div>
@@ -184,6 +185,8 @@
       </div>
       <button id="btn-restart" class="btn-ghost host-only hidden">Reiniciar Sala</button>
     </section>
+
+    <section id="print-summary" class="print-summary hidden"></section>
   </main>
 
   <!-- Modal rápido para credenciales Supabase -->

@@ -35,6 +35,9 @@ Durante la actividad, los participantes asumen el rol de **Tech Leads** y audita
 * **Sincronización en Tiempo Real:** Supabase Realtime (modo *Broadcast*, sin necesidad de base de datos ni tablas).
 * **Resiliencia en el Aula:** Incluye un **Modo Offline** manual en la vista del presentador para continuar la dinámica si falla la conectividad en el instituto.
 * **Moderación de Lobby:** Filtro normalizado de alias ofensivos (incluyendo detección de *leetspeak*) y expulsión en un clic desde la vista del proyector.
+* **Ronda de Práctica:** Antes de las seis rondas puntuables se incluye un ejercicio guiado, con tiempo, que no afecta el ranking.
+* **Resumen de Aprendizaje:** Al finalizar, cada participante puede imprimir o guardar como PDF las preguntas, respuestas, explicaciones y su puntaje.
+* **Experiencia Mobile:** El código de cada pregunta se muestra abierto y se adapta a pantallas pequeñas.
 
 ---
 

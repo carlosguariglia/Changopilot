@@ -1,5 +1,5 @@
 (() => {
-  const APP_VERSION = "3.16";
+  const APP_VERSION = "3.17";
   const ROUND_SECONDS = 40;
   const LETTERS = ["A", "B", "C", "D"];
   const HOST_ACCESS_KEY = "Chango2026";
@@ -182,11 +182,17 @@
     // Generar URL limpia para alumnos (sin ?host=true)
     const studentUrl = `${window.location.origin}${window.location.pathname}`;
     $("join-url-text").textContent = studentUrl;
-    new QRCode($("qrcode"), {
-      text: studentUrl,
-      width: 210,
-      height: 210
-    });
+    const qrContainer = $("qrcode");
+    if (typeof QRCode === "function") {
+      new QRCode(qrContainer, {
+        text: studentUrl,
+        width: 210,
+        height: 210
+      });
+    } else {
+      qrContainer.textContent = "QR no disponible. Usá la URL mostrada debajo.";
+      qrContainer.classList.add("qr-unavailable");
+    }
 
     // Modal Supabase
     const modal = $("supabase-modal");

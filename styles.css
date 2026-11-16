@@ -191,6 +191,15 @@ input[type="text"], input[type="url"] {
   margin: 1rem 0;
 }
 .url-caption { font-size: 0.8rem; color: var(--text-muted); word-break: break-all; }
+.qr-unavailable {
+  min-width: 210px;
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
 
 .panel-header {
   display: flex;

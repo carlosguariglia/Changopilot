@@ -1,5 +1,5 @@
 (() => {
-  const APP_VERSION = "3.17";
+  const APP_VERSION = "3.19";
   const ROUND_SECONDS = 40;
   const LETTERS = ["A", "B", "C", "D"];
   const HOST_ACCESS_KEY = "Chango2026";
@@ -91,7 +91,12 @@
       state.channel
         .on("broadcast", { event: "player_join" }, ({ payload }) => {
           console.log("[Changopilot] player_join recibido:", payload);
-          if (!isHost || !payload || state.kickedIds.has(payload.id)) return;
+          if (
+            !isHost ||
+            !payload ||
+            state.phase === "CLOSING" ||
+            state.kickedIds.has(payload.id)
+          ) return;
           const duplicateAlias = Object.values(state.players).some(
             (player) =>
               player.id !== payload.id &&
@@ -604,6 +609,7 @@
 
   function syncStudentWithHost(payload) {
     if (!state.me) return;
+    const wasConfirmedByHost = state.me.confirmedByHost;
 
     if (payload.players && payload.players[state.me.id]) {
       state.me.score = payload.players[state.me.id].score;
@@ -654,6 +660,7 @@
       $("student-fonotipia-invite").classList.add("hidden");
       showView("student-wait");
     } else if (payload.phase === "CLOSING") {
+      if (!wasConfirmedByHost) return;
       state.phase = "CLOSING";
       $("wait-title").textContent = "¡Gracias por su participación!";
       $("wait-subtitle").textContent = "El criterio técnico se construye revisando, preguntando y haciéndose responsable.";

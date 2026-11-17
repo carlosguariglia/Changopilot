@@ -35,6 +35,8 @@ Durante la actividad, los participantes asumen el rol de **Team Leaders** y audi
 * **Sincronización en Tiempo Real:** Supabase Realtime (modo *Broadcast*, sin necesidad de base de datos ni tablas).
 * **Resiliencia en el Aula:** Incluye un **Modo Offline** manual en la vista del presentador para continuar la dinámica si falla la conectividad en el instituto.
 * **Moderación de Lobby:** Filtro normalizado de alias ofensivos (incluyendo detección de *leetspeak*) y expulsión en un clic desde la vista del proyector.
+* **Reconexión sin pérdida:** Los participantes desconectados temporalmente siguen conservando su puntaje y pueden volver a ingresar sin ser eliminados por inactividad. La expulsión queda a cargo del presentador.
+* **Ingreso tardío:** Un participante que entra después de comenzar puede jugar las rondas restantes desde un puntaje inicial de 0; no recupera puntos de rondas anteriores. Al cerrar y volver a abrir el navegador, conserva su ID, puntaje y posición si no fue expulsado manualmente.
 * **Ronda de Práctica:** Antes de las seis rondas puntuables se incluye un ejercicio guiado, con tiempo, que no afecta el ranking.
 * **Resumen de Aprendizaje:** Al finalizar, cada participante puede imprimir o guardar como PDF el mensaje pedagógico, las preguntas técnicas, las respuestas correctas, las explicaciones y moralejas, su puntaje y una página final con enlaces e imágenes de Fonotipia y del Visualizador de Progreso Académico.
 * **Experiencia Mobile:** El código de cada pregunta se muestra abierto y se adapta a pantallas pequeñas.

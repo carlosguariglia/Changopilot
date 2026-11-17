@@ -1,7 +1,6 @@
 (() => {
   const APP_VERSION = "3.43";
   const ROUND_SECONDS = 80;
-  const PLAYER_TIMEOUT_MS = 15000;
   const LETTERS = ["A", "B", "C", "D"];
   const HOST_ACCESS_KEY = "Chango2026";
   const FONOTIPIA_URL = "https://carlosguariglia.github.io/fonotipia/";
@@ -36,7 +35,6 @@
     roomSessionId: null,
     timeLeft: ROUND_SECONDS,
     timerId: null,
-    playerCleanupId: null,
     players: {}, // { [id]: { id, alias, year, score } }
     votes: {},   // { [playerId]: { optionIndex, timeLeft } }
     roundDeltas: {},
@@ -275,8 +273,6 @@
     $("btn-finalize").classList.remove("hidden");
     $("btn-finalize").addEventListener("click", showClosingView);
     $("btn-restart").addEventListener("click", () => window.location.reload());
-    clearInterval(state.playerCleanupId);
-    state.playerCleanupId = setInterval(cleanupInactivePlayers, 5000);
   }
 
   function renderLobbyPlayers() {
@@ -298,27 +294,10 @@
         delete state.players[p.id];
         sendBroadcast("kick_player", { playerId: p.id });
         renderLobbyPlayers();
+        broadcastRoomState();
       });
       list.appendChild(chip);
     });
-  }
-
-  function cleanupInactivePlayers() {
-    if (!isHost || state.phase === "CLOSING") return;
-    const now = Date.now();
-    let removed = false;
-    Object.values(state.players).forEach((player) => {
-      if (player.lastSeen && now - player.lastSeen > PLAYER_TIMEOUT_MS) {
-        delete state.players[player.id];
-        delete state.votes[player.id];
-        removed = true;
-      }
-    });
-    if (removed) {
-      renderLobbyPlayers();
-      updateHostVoteCounter();
-      broadcastRoomState();
-    }
   }
 
   function startRound(index) {

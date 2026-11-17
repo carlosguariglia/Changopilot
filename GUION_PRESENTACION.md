@@ -246,7 +246,7 @@ La práctica no suma puntos. Esto permite enseñar primero la dinámica y despu�
 ### Resiliencia y experiencia de aula
 
 - Si no hay conexión, existe modo offline para la vista del proyector.
-- Se limpia a los jugadores inactivos después de un tiempo.
+- No se eliminan jugadores por inactividad: una desconexión temporal no borra su puntaje y el presentador controla la expulsión manual.
 - Se evita votar más de una vez por ronda.
 - Se controla la duplicación de alias.
 - Se filtran alias ofensivos normalizando tildes, separadores y formas de *leetspeak*.
@@ -336,6 +336,10 @@ La interfaz guarda la opción elegida en el estado del participante y oculta las
 ### ¿Cómo se calculan los rankings?
 
 Se ordenan los jugadores por puntaje y se calcula además un promedio por año, acumulando los puntajes y dividiendo por la cantidad de participantes de cada grupo.
+
+### ¿Qué pasa si alguien entra tarde o vuelve a abrir el navegador?
+
+El ingreso tardío empieza con puntaje 0 y participa desde la ronda que está activa, sin recuperar puntos de rondas anteriores. Si una persona cierra temporalmente el navegador y vuelve a entrar con su identificación guardada, recupera su puntaje acumulado mientras el presentador no haya expulsado manualmente al participante.
 
 ### ¿Por qué mostrar el prompt de la IA?
 

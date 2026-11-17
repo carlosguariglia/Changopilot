@@ -20,15 +20,15 @@
 <body>
   <header class="topbar">
     <div class="brand">
-      <span class="badge-live" id="conn-badge">● Conectando...</span>
+      <span class="badge-live" id="conn-badge">Conectando...</span>
       <h1>IA: ¿Copiloto o Chango Automático?</h1>
     </div>
     <div class="topbar-actions">
       <button id="btn-offline-toggle" class="btn-ghost hidden" title="Alternar modo proyector sin internet">
-        📡 Modo Online
+        <span class="ui-icon" data-icon="radio"></span>Modo Online
       </button>
       <button id="btn-theme" class="btn-ghost" title="Cambiar tema claro/oscuro">
-        🌙 Oscuro
+        <span class="ui-icon" data-icon="moon"></span>Oscuro
       </button>
     </div>
   </header>
@@ -64,13 +64,23 @@
         <span>Tu Puntaje</span>
         <strong id="student-score">0 pts</strong>
       </div>
-      <button id="btn-download-summary" class="btn-primary full-width hidden">📄 Descargar resumen en PDF</button>
+      <button id="btn-download-summary" class="btn-primary full-width hidden"><span class="ui-icon" data-icon="download"></span>Descargar resumen en PDF</button>
       <button id="btn-skip-summary" class="btn-ghost full-width hidden">Continuar sin descargar</button>
-      <div id="student-fonotipia-invite" class="project-invite hidden">
-        <h3>También podés conocer Fonotipia</h3>
-        <p>Un proyecto de Carlos Guariglia sobre escucha y silencio.</p>
-        <div id="student-fonotipia-qr" class="qr-box"></div>
-        <a href="https://carlosguariglia.github.io/fonotipia/" target="_blank" rel="noopener">carlosguariglia.github.io/fonotipia</a>
+      <div id="student-fonotipia-invite" class="project-invite-grid hidden">
+        <div class="project-invite">
+          <h3>También podés conocer Fonotipia</h3>
+          <p>Un proyecto de Carlos Guariglia sobre escucha y silencio.</p>
+          <div id="student-fonotipia-qr" class="qr-box"></div>
+          <img class="project-preview" src="assets/fonotipia.png" alt="Vista previa de Fonotipia" />
+          <a href="https://carlosguariglia.github.io/fonotipia/" target="_blank" rel="noopener">carlosguariglia.github.io/fonotipia</a>
+        </div>
+        <div class="project-invite">
+          <h3>Visualizador de Progreso Académico</h3>
+          <p>Consultá y visualizá tu progreso académico.</p>
+          <div id="student-progress-viewer-qr" class="qr-box"></div>
+          <img class="project-preview" src="assets/progreso.png" alt="Vista previa del Visualizador de Progreso Académico" />
+          <a href="https://carlosguariglia.github.io/Visualizador_de_Progreso_Academico/" target="_blank" rel="noopener">Visualizador de Progreso Académico</a>
+        </div>
       </div>
     </section>
 
@@ -92,15 +102,27 @@
       </div>
       <div id="mobile-options" class="options-stack"></div>
       <div id="mobile-voted-feedback" class="voted-box hidden">
-        <p>✅ Voto enviado. Esperando cierre de ronda...</p>
+        <p><span class="ui-icon" data-icon="check"></span>Voto enviado. Esperando cierre de ronda...</p>
       </div>
     </section>
 
     <!-- ==================== VISTA ALUMNO: RESULTADO RONDA ==================== -->
     <section id="student-result" class="view card center-card hidden">
-      <div id="result-status-icon" class="big-emoji">🎯</div>
+      <div id="result-status-icon" class="status-icon" role="img" aria-label="Resultado correcto"></div>
       <h2 id="result-status-title">¡Buen ojo de Tech Lead!</h2>
       <p id="result-points-earned" class="points-delta">+850 pts</p>
+      <div class="code-spoiler">
+        <strong class="code-label">Código analizado</strong>
+        <pre><code id="mobile-result-code" class="language-cpp"></code></pre>
+      </div>
+      <div class="explanation-box">
+        <strong>¿Qué ocurrió?</strong>
+        <p id="mobile-explanation"></p>
+        <div id="mobile-improvement" class="improvement-box hidden">
+          <strong>Una forma más flexible de escribirlo:</strong>
+          <pre><code id="mobile-improvement-code" class="language-javascript"></code></pre>
+        </div>
+      </div>
       <div class="moraleja-box">
         <strong>Diagnóstico:</strong>
         <p id="mobile-moraleja"></p>
@@ -118,12 +140,12 @@
         <h2>Unite a la Auditoría</h2>
         <div id="qrcode" class="qr-box"></div>
         <p id="join-url-text" class="url-caption"></p>
-        <button id="btn-config-supabase" class="btn-ghost small">⚙️ Configurar Supabase</button>
+        <button id="btn-config-supabase" class="btn-ghost small"><span class="ui-icon" data-icon="settings"></span>Configurar Supabase</button>
       </div>
       <div class="card players-panel">
         <div class="panel-header">
           <h2>Equipo Conectado (<span id="player-count">0</span>)</h2>
-          <button id="btn-start-game" class="btn-primary">Iniciar Práctica ▶</button>
+          <button id="btn-start-game" class="btn-primary">Iniciar Práctica <span class="ui-icon" data-icon="arrow"></span></button>
         </div>
         <p class="hint">Pasá el cursor sobre un alias para moderar/expulsar si hace falta.</p>
         <div id="lobby-players-list" class="players-cloud"></div>
@@ -163,6 +185,18 @@
       <div class="card code-panel">
         <span class="tag success">Autopsia del Entregable</span>
         <h2 id="reveal-question-text"></h2>
+        <div class="code-spoiler">
+          <strong class="code-label">Código analizado</strong>
+          <pre><code id="reveal-code" class="language-cpp"></code></pre>
+        </div>
+        <div class="explanation-box">
+          <strong>¿Qué ocurrió?</strong>
+          <p id="reveal-explanation"></p>
+          <div id="reveal-improvement" class="improvement-box hidden">
+            <strong>Una forma más flexible de escribirlo:</strong>
+            <pre><code id="reveal-improvement-code" class="language-javascript"></code></pre>
+          </div>
+        </div>
         <div id="reveal-bars" class="bars-container"></div>
         <div class="moraleja-highlight">
           <h3>🧠 Criterio del Analista (Moraleja):</h3>
@@ -172,12 +206,12 @@
 
       <div class="card leaderboard-panel">
         <div class="panel-header">
-          <h2>🏆 Top 5 Auditores</h2>
-          <button id="btn-next-round" class="btn-primary">Siguiente Ronda ▶</button>
+          <h2><span class="ui-icon" data-icon="trophy"></span>Top 5 Auditores</h2>
+          <button id="btn-next-round" class="btn-primary">Siguiente Ronda <span class="ui-icon" data-icon="arrow"></span></button>
         </div>
         <ol id="leaderboard-list" class="ranking-list"></ol>
 
-        <h3>📊 Promedio por Año</h3>
+        <h3><span class="ui-icon" data-icon="chart"></span>Promedio por Año</h3>
         <div id="year-ranking-list" class="year-bars"></div>
       </div>
     </section>
@@ -185,9 +219,9 @@
     <!-- ==================== VISTA PODIO FINAL ==================== -->
     <section id="podium-view" class="view card center-card wide-card hidden">
       <span class="tag">Code Review Finalizado</span>
-      <h2>🏆 Podio de Tech Leads</h2>
+      <h2><span class="ui-icon" data-icon="trophy"></span>Podio de Tech Leads</h2>
       <div id="podium-container" class="podium-grid"></div>
-      <h3>🥇 Ranking Final por Año</h3>
+      <h3><span class="ui-icon" data-icon="medal"></span>Ranking Final por Año</h3>
       <div id="final-year-ranking" class="year-bars"></div>
       <div class="closing-banner">
         <p><strong>Conclusión:</strong> La IA acelera el código, pero la responsabilidad y el criterio siguen siendo tuyos.</p>
@@ -199,9 +233,20 @@
       <span class="tag success">Actividad finalizada</span>
       <h2>¡Gracias por su participación!</h2>
       <p class="subtitle">El criterio técnico se construye revisando, preguntando y haciéndose responsable.</p>
-      <div id="host-fonotipia-qr" class="qr-box"></div>
-      <p>Conocé también <strong>Fonotipia</strong>, otro proyecto de Carlos Guariglia.</p>
-      <a href="https://carlosguariglia.github.io/fonotipia/" target="_blank" rel="noopener">carlosguariglia.github.io/fonotipia</a>
+      <div class="project-invite-grid">
+        <div class="project-invite">
+          <div id="host-fonotipia-qr" class="qr-box"></div>
+          <img class="project-preview" src="assets/fonotipia.png" alt="Vista previa de Fonotipia" />
+          <p>Conocé también <strong>Fonotipia</strong>, otro proyecto de Carlos Guariglia.</p>
+          <a href="https://carlosguariglia.github.io/fonotipia/" target="_blank" rel="noopener">carlosguariglia.github.io/fonotipia</a>
+        </div>
+        <div class="project-invite">
+          <div id="host-progress-viewer-qr" class="qr-box"></div>
+          <img class="project-preview" src="assets/progreso.png" alt="Vista previa del Visualizador de Progreso Académico" />
+          <p>Conocé también el <strong>Visualizador de Progreso Académico</strong>.</p>
+          <a href="https://carlosguariglia.github.io/Visualizador_de_Progreso_Academico/" target="_blank" rel="noopener">Visualizador de Progreso Académico</a>
+        </div>
+      </div>
       <button id="btn-restart" class="btn-ghost full-width">Reiniciar Sala</button>
     </section>
 

@@ -16,7 +16,7 @@ for (int i = 1; i <= 3; i++) {
   ],
   correctIndex: 1,
   moraleja: "Para analizar código, seguí el estado de las variables después de cada iteración, no solo la cantidad de veces que se repite el ciclo.",
-  explanation: "La variable empieza en 0. En la primera vuelta suma 1 y queda en 1; luego suma 2 y queda en 3; finalmente suma 3 y queda en 6."
+  explanation: "La variable puntos empieza en 0. El ciclo pasa tres veces: en la primera suma 1 y queda en 1, en la segunda suma 2 y queda en 3, y en la tercera suma 3 y queda en 6. La cantidad de vueltas no es el resultado: hay que seguir qué cambia dentro de cada vuelta."
 };
 
 const QUESTIONS = [
@@ -39,7 +39,7 @@ while (pedido <= 10); {
     ],
     correctIndex: 1,
     moraleja: "Un simple punto y coma convierte al while en un bucle vacío eterno; si mirás el código por arriba como pasamanos, tu cerebro lo ignora.",
-    explanation: "El punto y coma termina el while. Por eso el bloque siguiente no pertenece al ciclo y la condición se evalúa indefinidamente mientras pedido siga valiendo 1."
+    explanation: "En C++, el punto y coma también puede representar una instrucción vacía. Por eso ese while termina allí y repite una tarea que no hace nada mientras pedido siga valiendo 1. El bloque entre llaves queda separado del ciclo y nunca llega a ejecutarse. Es como poner un cartel que dice 'repetir' pero dejar la tarea real fuera del cartel."
   },
   {
     id: 2,
@@ -61,7 +61,7 @@ while (pedido <= 10); {
     ],
     correctIndex: 1,
     moraleja: "Un return temprano antes del delete deja memoria huérfana; sin entender el ciclo de vida de recursos (o usar RAII), la app se queda sin RAM en producción.",
-    explanation: "new reserva memoria en el heap y return abandona la función antes de ejecutar delete[]. Cada error deja los 10.000 enteros reservados y la fuga se acumula con el tiempo."
+    explanation: "new reserva un espacio para 10.000 enteros y devuelve la dirección de ese espacio. Cuando ocurre un error, return sale inmediatamente de la función y salta el delete[], que era el encargado de liberar esa memoria. La información deja de ser útil, pero el espacio sigue ocupado; cada error agrega otra porción que no se puede reutilizar. Es parecido a guardar cajas en un depósito y perder la dirección de cada una: siguen ocupando lugar aunque ya no podamos usarlas."
   },
   {
     id: 3,
@@ -93,7 +93,7 @@ int main() {
     ],
     correctIndex: 1,
     moraleja: "Heredar no alcanza para tener polimorfismo en C++; sin 'virtual', el compilador mira el tipo del puntero y no el del objeto real.",
-    explanation: "El puntero está declarado como Notificacion*. Como enviar() no es virtual en la clase base, C++ resuelve la llamada usando el tipo declarado del puntero e imprime 'Generica'."
+    explanation: "n apunta a un objeto Email, pero está declarado como un puntero a Notificacion. Sin virtual, C++ decide qué enviar() usar mirando el tipo de la referencia (Notificacion*) y por eso imprime 'Generica'. La herencia permite que Email sea tratado como una Notificacion, pero para que cada objeto responda con su propia versión hay que indicar que el método puede comportarse de forma polimórfica. La idea es similar a llamar a 'enviar' sin importar si el mensaje sale por email o por otro medio: la acción es la misma, pero cada tipo la realiza de manera diferente."
   },
   {
     id: 4,
@@ -111,7 +111,7 @@ WHERE estado = 'CANCELADO' OR 1 = 1;`,
     ],
     correctIndex: 2,
     moraleja: "'OR 1 = 1' hace que toda la condición sea siempre verdadera; ejecutar un script SQL sin auditarlo te vacía una base entera.",
-    explanation: "La expresión 1 = 1 siempre es verdadera. Como está unida con OR, la condición completa resulta verdadera para todas las filas y el DELETE no filtra ningún registro."
+    explanation: "La condición pide que el estado sea CANCELADO o que 1 sea igual a 1. Como 1 siempre es igual a 1, la segunda parte siempre resulta verdadera. Con OR alcanza con que una parte sea verdadera, así que todas las filas cumplen la condición y el DELETE borra todos los pedidos. Es como permitir el ingreso si alguien tiene autorización o si el sol siempre sale: la segunda condición hace que cualquiera pueda pasar."
   },
   {
     id: 5,
@@ -138,7 +138,28 @@ WHERE estado = 'CANCELADO' OR 1 = 1;`,
     ],
     correctIndex: 1,
     moraleja: "La IA siempre mete un 'else if' más para salir del paso; sin desacoplar con estrategias o interfaces, terminás con un monolito rígido.",
-    explanation: "Cada nuevo medio de pago obliga a modificar CarritoDeCompras. Una estrategia o interfaz de pago permitiría agregar implementaciones sin cambiar el núcleo existente."
+    explanation: "El código actual funciona, pero CarritoDeCompras conoce los detalles de cada medio de pago y debe modificarse cada vez que aparece uno nuevo. Eso es riesgoso: al agregar MercadoPago, podríamos romper el pago con tarjeta. En una organización más flexible, el carrito no sabe cómo funciona cada medio: recibe un objeto que sabe realizar un pago y le delega esa tarea. Sí, una función termina llamando a otra, pero eso es justamente delegar: cada parte se ocupa de una responsabilidad concreta. Si mañana agregamos PagoConTransferencia, creamos una clase nueva y el carrito queda igual. Esa es la idea de Abierto/Cerrado: abierto para agregar comportamientos, pero cerrado a modificaciones innecesarias.",
+    improvedCode: `class PagoConTarjeta {
+    pagar(monto) {
+        procesarPosnet(monto);
+    }
+}
+
+class PagoConMercadoPago {
+    pagar(monto) {
+        sdkMercadoPago.crearPreferencia(monto);
+    }
+}
+
+class CarritoDeCompras {
+    constructor(medioDePago) {
+        this.medioDePago = medioDePago;
+    }
+
+    pagar(monto) {
+        this.medioDePago.pagar(monto);
+    }
+}`
   },
   {
     id: 6,
@@ -161,6 +182,6 @@ WHERE estado = 'CANCELADO' OR 1 = 1;`,
     ],
     correctIndex: 1,
     moraleja: "La IA escribe código para un usuario ideal en laboratorio; prever concurrencia y reglas críticas de negocio es responsabilidad del Analista.",
-    explanation: "Las dos ejecuciones pueden leer libres = 1 antes de que cualquiera actualice la base. Ambas pasan la validación y luego intentan ocupar el mismo último lugar; la operación debe ser atómica o transaccional."
+    explanation: "Las dos solicitudes pueden leer libres = 1 casi al mismo tiempo. Como ninguna alcanzó a actualizar la base todavía, las dos creen que queda un lugar y ambas intentan reservarlo. El problema no está en que una función esté mal escrita, sino en que dos acciones se intercalan sin proteger la regla 'solo puede quedar una reserva'. La solución debe hacer la verificación y la reserva como una sola operación protegida, para que cuando una persona tome el último lugar la otra reciba un resultado correcto."
   }
 ];

@@ -40,6 +40,16 @@ body {
 
 .hidden { display: none !important; }
 
+.ui-icon,
+.icon-svg {
+  display: inline-flex;
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.18em;
+  flex: 0 0 auto;
+}
+.ui-icon .icon-svg { width: 100%; height: 100%; }
+
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -416,15 +426,33 @@ input[type="text"], input[type="url"] {
 .score-box strong { font-size: 1.5rem; color: var(--primary); }
 #btn-download-summary { margin-top: 1rem; }
 #btn-skip-summary { margin-top: 0.5rem; }
-.project-invite {
+.project-invite-grid {
   margin-top: 1.5rem;
   padding-top: 1.25rem;
   border-top: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+.project-invite {
+  min-width: 0;
 }
 .project-invite p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem; }
 .project-invite .qr-box { margin: 0.5rem 0 0.75rem; }
+.project-preview {
+  display: block;
+  width: 180px;
+  height: 180px;
+  margin: 0.5rem auto 0.75rem;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
 .project-invite a,
 #host-closing a { color: var(--primary); font-size: 0.85rem; overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .project-invite-grid { grid-template-columns: 1fr; }
+}
 
 .round-header-mobile {
   display: flex;
@@ -464,6 +492,38 @@ input[type="text"], input[type="url"] {
   min-width: max-content;
   line-height: 1.45;
 }
+.explanation-box {
+  margin: 1rem 0;
+  padding: 0.9rem 1rem;
+  border-left: 4px solid var(--primary);
+  background: var(--surface-alt);
+  border-radius: 0 8px 8px 0;
+  text-align: left;
+}
+.explanation-box strong {
+  display: block;
+  margin-bottom: 0.4rem;
+}
+.explanation-box p {
+  margin: 0;
+  line-height: 1.5;
+}
+.improvement-box {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.improvement-box pre {
+  margin: 0.6rem 0 0;
+  max-width: 100%;
+  overflow-x: auto;
+  font-size: clamp(0.68rem, 2.5vw, 0.82rem);
+}
+.improvement-box code {
+  display: block;
+  min-width: max-content;
+  line-height: 1.4;
+}
 
 .options-stack { display: flex; flex-direction: column; gap: 0.65rem; }
 .mobile-opt-btn {
@@ -490,7 +550,14 @@ input[type="text"], input[type="url"] {
   color: var(--primary);
 }
 
-.big-emoji { font-size: 3rem; margin-bottom: 0.5rem; }
+.status-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  margin: 0 auto 0.5rem;
+}
+.status-icon svg { display: block; width: 100%; height: 100%; }
+.status-icon.success { color: var(--success); }
+.status-icon.error { color: var(--danger); }
 .points-delta { font-size: 1.3rem; font-weight: 800; color: var(--success); margin-bottom: 1rem; }
 .moraleja-box {
   text-align: left;

@@ -1,10 +1,11 @@
 (() => {
   const APP_VERSION = "3.22";
-  const ROUND_SECONDS = 40;
+  const ROUND_SECONDS = 80;
   const PLAYER_TIMEOUT_MS = 15000;
   const LETTERS = ["A", "B", "C", "D"];
   const HOST_ACCESS_KEY = "Chango2026";
   const FONOTIPIA_URL = "https://carlosguariglia.github.io/fonotipia/";
+  const PROGRESS_VIEWER_URL = "https://carlosguariglia.github.io/Visualizador_de_Progreso_Academico/";
 
   // Detectar si es vista Proyector (?host=true)
   const params = new URLSearchParams(window.location.search);
@@ -36,6 +37,26 @@
   };
 
   const $ = (id) => document.getElementById(id);
+  function iconSvg(name) {
+    const paths = {
+      arrow: '<path d="M12 5l7 7-7 7M5 12h13"/>',
+      chart: '<path d="M4 19V5M4 19h16M8 16v-5M12 16V8M16 16v-3"/>',
+      check: '<path d="M5 12l4 4L19 6"/>',
+      download: '<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>',
+      medal: '<circle cx="12" cy="15" r="5"/><path d="M9 10L7 4h3l2 4 2-4h3l-2 6"/>',
+      moon: '<path d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"/>',
+      radio: '<path d="M12 18v3M8 21h8M9 14a4 4 0 1 1 6 0M6 11a8 8 0 1 1 12 0"/>',
+      settings: '<path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm0-5v2m0 14v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M3 12h2m14 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>',
+      sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M4.93 19.07l1.41-1.41m12.73-12.73 1.41-1.41"/>',
+      trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0V4ZM6 6H3v2a4 4 0 0 0 4 4M18 6h3v2a4 4 0 0 1-4 4M12 13v5M8 21h8M9 18h6"/>'
+    };
+    return `<svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">${paths[name] || paths.check}</g></svg>`;
+  }
+
+  document.querySelectorAll(".ui-icon").forEach((element) => {
+    element.innerHTML = iconSvg(element.dataset.icon);
+  });
+
   $("app-version").textContent = `Version: ${APP_VERSION}`;
 
   // ==================== TEMA LIGHT / DARK ====================
@@ -46,10 +67,10 @@
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("app_theme", theme);
     if (theme === "dark") {
-      btnTheme.textContent = "☀️ Claro";
+      btnTheme.innerHTML = `${iconSvg("sun")}Claro`;
       prismLink.href = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css";
     } else {
-      btnTheme.textContent = "🌙 Oscuro";
+      btnTheme.innerHTML = `${iconSvg("moon")}Oscuro`;
       prismLink.href = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css";
     }
   }
@@ -76,10 +97,10 @@
   function initSupabase() {
     if (!state.sbUrl || !state.sbKey || !window.supabase) {
       state.offlineMode = true;
-      updateConnBadge("offline", "● Modo Offline (Local)");
+      updateConnBadge("offline", "Modo Offline (Local)");
       if (isHost) {
         $("btn-offline-toggle").classList.remove("hidden");
-        $("btn-offline-toggle").textContent = "📡 Modo Offline";
+        $("btn-offline-toggle").innerHTML = `${iconSvg("radio")}Modo Offline`;
       }
       return;
     }
@@ -160,10 +181,10 @@
           console.log("[Changopilot] Estado canal:", status);
           if (status === "SUBSCRIBED") {
             state.offlineMode = false;
-            updateConnBadge("online", "● En Vivo (Supabase)");
+            updateConnBadge("online", "En Vivo (Supabase)");
             if (isHost) {
               $("btn-offline-toggle").classList.remove("hidden");
-              $("btn-offline-toggle").textContent = "🟢 Online";
+              $("btn-offline-toggle").innerHTML = `${iconSvg("radio")}Online`;
               broadcastRoomState();
             } else if (state.me) {
               sendBroadcast("player_join", state.me);
@@ -173,7 +194,7 @@
     } catch (err) {
       console.error("[Changopilot] Error Supabase:", err);
       state.offlineMode = true;
-      updateConnBadge("offline", "● Error red (Modo Offline)");
+      updateConnBadge("offline", "Error de red (Modo Offline)");
     }
   }
 
@@ -222,10 +243,12 @@
 
     $("btn-offline-toggle").addEventListener("click", () => {
       state.offlineMode = !state.offlineMode;
-      $("btn-offline-toggle").textContent = state.offlineMode ? "📡 Modo Offline" : "🟢 Online";
+      $("btn-offline-toggle").innerHTML = state.offlineMode
+        ? `${iconSvg("radio")}Modo Offline`
+        : `${iconSvg("radio")}Online`;
       updateConnBadge(
         state.offlineMode ? "offline" : "online",
-        state.offlineMode ? "● Modo Offline (Manual)" : "● En Vivo (Supabase)"
+        state.offlineMode ? "Modo Offline (Manual)" : "En Vivo (Supabase)"
       );
     });
 
@@ -415,11 +438,15 @@
 
     showView("host-reveal");
     $("reveal-question-text").textContent = q.question;
+    renderCodeSnippet("reveal-code", q);
+    $("reveal-explanation").textContent = q.explanation;
+    renderImprovementSnippet("reveal-improvement", "reveal-improvement-code", q);
     $("host-moraleja").textContent = q.moraleja;
     $("btn-next-round").textContent =
       state.isPractice || state.roundIndex + 1 < QUESTIONS.length
-        ? "Siguiente Ronda ▶"
-        : "Ver Podio Final 🏆";
+        ? "Siguiente Ronda"
+        : "Ver Podio Final";
+    $("btn-next-round").innerHTML += ` ${iconSvg("arrow")}`;
 
     const totalVotes = Object.keys(state.votes).length || 1;
     const barsEl = $("reveal-bars");
@@ -431,7 +458,7 @@
       row.className = `bar-row ${isCorrect ? "correct" : ""}`;
       row.innerHTML = `
         <div class="bar-top">
-          <span>${isCorrect ? "✅ " : ""}${LETTERS[i]}) ${escapeHtml(opt)}</span>
+          <span>${isCorrect ? `${iconSvg("check")} ` : ""}${LETTERS[i]}) ${escapeHtml(opt)}</span>
           <span>${counts[i]} votos (${pct}%)</span>
         </div>
         <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
@@ -483,7 +510,7 @@
     state.phase = "PODIUM";
     showView("podium-view");
     const sorted = Object.values(state.players).sort((a, b) => b.score - a.score);
-    const medals = ["🥇 1º Puesto", "🥈 2º Puesto", "🥉 3º Puesto"];
+    const medals = ["1º Puesto", "2º Puesto", "3º Puesto"];
     const container = $("podium-container");
     container.innerHTML = "";
 
@@ -492,8 +519,8 @@
       const box = document.createElement("div");
       box.className = `podium-spot ${pos === 0 ? "first" : ""}`;
       box.innerHTML = p
-        ? `<div class="tag">${medals[pos]}</div><h3>${escapeHtml(p.alias)}</h3><p>${escapeHtml(p.year)}</p><strong>${p.score} pts</strong>`
-        : `<div class="tag">${medals[pos]}</div><h3>—</h3>`;
+        ? `<div class="tag">${iconSvg("medal")}${medals[pos]}</div><h3>${escapeHtml(p.alias)}</h3><p>${escapeHtml(p.year)}</p><strong>${p.score} pts</strong>`
+        : `<div class="tag">${iconSvg("medal")}${medals[pos]}</div><h3>—</h3>`;
       container.appendChild(box);
     });
 
@@ -504,7 +531,8 @@
   function showClosingView() {
     state.phase = "CLOSING";
     showView("host-closing");
-    renderFonotipiaQr("host-fonotipia-qr");
+    renderProjectQr("host-fonotipia-qr", FONOTIPIA_URL);
+    renderProjectQr("host-progress-viewer-qr", PROGRESS_VIEWER_URL);
     broadcastRoomState();
   }
 
@@ -678,11 +706,14 @@
       const earned = (payload.deltas && payload.deltas[state.me.id]) || 0;
       const acertó = state.me.votedOption === q.correctIndex;
 
-      $("result-status-icon").textContent = acertó ? "🎯" : "💥";
+      renderResultIcon(acertó);
       $("result-status-title").textContent = acertó
         ? "¡Frenaste el bug a tiempo!"
         : "Pasó a producción con bug...";
       $("result-points-earned").textContent = acertó ? `+${earned} pts` : "0 pts";
+      renderCodeSnippet("mobile-result-code", q);
+      $("mobile-explanation").textContent = q.explanation;
+      renderImprovementSnippet("mobile-improvement", "mobile-improvement-code", q);
       $("mobile-moraleja").textContent = q.moraleja;
       $("student-score-after").textContent = `${state.me.score} pts`;
       showView("student-result");
@@ -746,15 +777,16 @@
       $("btn-skip-summary").classList.add("hidden");
     }
     $("student-fonotipia-invite").classList.remove("hidden");
-    renderFonotipiaQr("student-fonotipia-qr");
+    renderProjectQr("student-fonotipia-qr", FONOTIPIA_URL);
+    renderProjectQr("student-progress-viewer-qr", PROGRESS_VIEWER_URL);
   }
 
-  function renderFonotipiaQr(elementId) {
+  function renderProjectQr(elementId, url) {
     const qrElement = $(elementId);
     qrElement.innerHTML = "";
     if (typeof QRCode === "function") {
       new QRCode(qrElement, {
-        text: FONOTIPIA_URL,
+        text: url,
         width: 180,
         height: 180
       });
@@ -804,6 +836,42 @@
         });
       });
       optsEl.appendChild(btn);
+    });
+  }
+
+  function renderCodeSnippet(elementId, question) {
+    const codeEl = $(elementId);
+    codeEl.className = `language-${question.language}`;
+    codeEl.textContent = question.code;
+    if (window.Prism) Prism.highlightElement(codeEl);
+  }
+
+  function renderResultIcon(isCorrect) {
+    const icon = $("result-status-icon");
+    icon.className = `status-icon ${isCorrect ? "success" : "error"}`;
+    icon.setAttribute("aria-label", isCorrect ? "Respuesta correcta" : "Respuesta incorrecta");
+    icon.innerHTML = isCorrect
+      ? `<svg viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" stroke-width="5"/>
+          <path d="M18 33l9 9 19-20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="5"/>
+        </svg>`
+      : `<svg viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" stroke-width="5"/>
+          <path d="M22 22l20 20M42 22L22 42" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="5"/>
+        </svg>`;
+  }
+
+  function renderImprovementSnippet(containerId, codeId, question) {
+    const container = $(containerId);
+    if (!question.improvedCode) {
+      container.classList.add("hidden");
+      return;
+    }
+
+    container.classList.remove("hidden");
+    renderCodeSnippet(codeId, {
+      language: question.language,
+      code: question.improvedCode
     });
   }
 

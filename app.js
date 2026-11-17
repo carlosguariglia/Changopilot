@@ -1,5 +1,5 @@
 (() => {
-  const APP_VERSION = "3.23";
+  const APP_VERSION = "3.25";
   const ROUND_SECONDS = 80;
   const PLAYER_TIMEOUT_MS = 15000;
   const LETTERS = ["A", "B", "C", "D"];
@@ -12,6 +12,11 @@
   const isHostRequest = params.get("host") === "true";
   const savedHostAccess = sessionStorage.getItem("changopilot_host_access");
   let isHost = isHostRequest && savedHostAccess === HOST_ACCESS_KEY;
+  const roomSessionId = isHost
+    ? (window.crypto && typeof window.crypto.randomUUID === "function"
+      ? window.crypto.randomUUID()
+      : `room_${Date.now()}_${Math.random().toString(36).slice(2)}`)
+    : null;
 
   if (isHost) {
     sessionStorage.setItem("changopilot_host_access", HOST_ACCESS_KEY);
@@ -28,6 +33,7 @@
     roundIndex: 0,
     isPractice: false,
     hasParticipatedInCurrentGame: false,
+    roomSessionId: null,
     timeLeft: ROUND_SECONDS,
     timerId: null,
     playerCleanupId: null,
@@ -540,6 +546,7 @@
 
   function broadcastRoomState(deltas = {}) {
     sendBroadcast("room_state", {
+      sessionId: roomSessionId,
       phase: state.phase,
       roundIndex: state.roundIndex,
       isPractice: state.isPractice,
@@ -609,6 +616,7 @@
       };
       state.phase = "LOBBY";
       state.hasParticipatedInCurrentGame = false;
+      state.roomSessionId = null;
       $("wait-title").textContent = "¡Ya estás adentro!";
       $("wait-subtitle").textContent = "Mirá la pantalla del proyector. El Tech Lead está por iniciar la primera ronda...";
       $("btn-download-summary").classList.add("hidden");
@@ -628,6 +636,12 @@
     if (savedMe) {
       try {
         state.me = JSON.parse(savedMe);
+        state.me.votedOption = null;
+        state.me.confirmedByHost = false;
+        state.phase = "LOBBY";
+        state.hasParticipatedInCurrentGame = false;
+        state.roomSessionId = null;
+        sessionStorage.setItem("changopilot_me", JSON.stringify(state.me));
         $("student-badge").textContent = `${state.me.alias} • ${state.me.year}`;
         sendBroadcast("player_join", state.me);
         showView("student-wait");
@@ -681,6 +695,13 @@
 
   function syncStudentWithHost(payload) {
     if (!state.me) return;
+    if (!payload.sessionId) return;
+    if (state.roomSessionId && state.roomSessionId !== payload.sessionId) return;
+    if (
+      !state.roomSessionId &&
+      !["LOBBY", "QUESTION"].includes(payload.phase)
+    ) return;
+    state.roomSessionId = payload.sessionId;
     const hostPlayer = payload.players && payload.players[state.me.id];
     if (payload.phase !== "LOBBY" && !hostPlayer) return;
     if (
@@ -841,7 +862,7 @@
       btn.className = "mobile-opt-btn";
       btn.innerHTML = `<span class="opt-letter">${LETTERS[i]}</span><span>${escapeHtml(opt)}</span>`;
       btn.addEventListener("click", () => {
-        if (state.me.votedOption !== null) return;
+        if (Number.isInteger(state.me.votedOption)) return;
         state.me.votedOption = i;
         sessionStorage.setItem("changopilot_me", JSON.stringify(state.me));
         optsEl.classList.add("hidden");

@@ -1,5 +1,5 @@
 (() => {
-  const APP_VERSION = "3.25";
+  const APP_VERSION = "3.26";
   const ROUND_SECONDS = 80;
   const PLAYER_TIMEOUT_MS = 15000;
   const LETTERS = ["A", "B", "C", "D"];
@@ -39,6 +39,7 @@
     playerCleanupId: null,
     players: {}, // { [id]: { id, alias, year, score } }
     votes: {},   // { [playerId]: { optionIndex, timeLeft } }
+    roundDeltas: {},
     kickedIds: new Set(),
     me: null     // { id, alias, year, score, votedOption, confirmedByHost }
   };
@@ -325,6 +326,7 @@
     state.isPractice = false;
     state.phase = "QUESTION";
     state.votes = {};
+    state.roundDeltas = {};
     state.timeLeft = ROUND_SECONDS;
 
     const q = QUESTIONS[index];
@@ -368,6 +370,7 @@
     state.isPractice = true;
     state.phase = "QUESTION";
     state.votes = {};
+    state.roundDeltas = {};
     state.timeLeft = ROUND_SECONDS;
 
     const q = PRACTICE_QUESTION;
@@ -443,6 +446,7 @@
         deltas[playerId] = 0;
       }
     });
+    state.roundDeltas = deltas;
 
     showView("host-reveal");
     $("reveal-question-text").textContent = q.question;
@@ -545,6 +549,12 @@
   }
 
   function broadcastRoomState(deltas = {}) {
+    const broadcastDeltas =
+      Object.keys(deltas).length > 0
+        ? deltas
+        : state.phase === "REVEAL"
+          ? state.roundDeltas
+          : {};
     sendBroadcast("room_state", {
       sessionId: roomSessionId,
       phase: state.phase,
@@ -552,7 +562,7 @@
       isPractice: state.isPractice,
       timeLeft: state.timeLeft,
       players: state.players,
-      deltas
+      deltas: broadcastDeltas
     });
   }
 

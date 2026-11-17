@@ -1,5 +1,5 @@
 (() => {
-  const APP_VERSION = "3.26";
+  const APP_VERSION = "3.43";
   const ROUND_SECONDS = 80;
   const PLAYER_TIMEOUT_MS = 15000;
   const LETTERS = ["A", "B", "C", "D"];
@@ -628,7 +628,7 @@
       state.hasParticipatedInCurrentGame = false;
       state.roomSessionId = null;
       $("wait-title").textContent = "¡Ya estás adentro!";
-      $("wait-subtitle").textContent = "Mirá la pantalla del proyector. El Tech Lead está por iniciar la primera ronda...";
+      $("wait-subtitle").textContent = "Mirá la pantalla del proyector. El Team Leader está por iniciar la primera ronda...";
       $("btn-download-summary").classList.add("hidden");
       $("btn-skip-summary").classList.add("hidden");
       $("student-fonotipia-invite").classList.add("hidden");
@@ -930,6 +930,12 @@
     summary.innerHTML = `
       <h1>Changopilot — Resumen de aprendizaje</h1>
       <p class="summary-meta">${alias} · Puntaje final: ${score} pts</p>
+      <section class="summary-talk">
+        <h2>La idea detrás de la actividad</h2>
+        <p>La inteligencia artificial puede acelerar la producción de código, pero no reemplaza el criterio técnico ni la responsabilidad profesional. Changopilot propone un equipo real de trabajo en el que <strong>Carlos Guariglia actúa como Team Leader</strong> y la <strong>IA participa como Junior</strong>: la IA genera propuestas rápidas y el Team Leader las interpreta, verifica, corrige y decide si están listas para producir.</p>
+        <p>El objetivo no fue competir por escribir código más rápido, sino aprender a revisar lo que la IA entrega. Para hacerlo, tuvimos que entender el problema, leer el código paso a paso, preguntar qué ocurría ante casos excepcionales, considerar seguridad y mantenimiento, probar la solución y asumir la responsabilidad de la decisión final.</p>
+        <blockquote>La IA propone. El Team Leader valida y se hace responsable.</blockquote>
+      </section>
       ${QUESTIONS.map((q, index) => `
         <article class="summary-question">
           <h2>Ronda ${index + 1}: ${escapeHtml(q.category)}</h2>
@@ -940,7 +946,26 @@
           <p><strong>Moraleja:</strong> ${escapeHtml(q.moraleja)}</p>
         </article>
       `).join("")}
+      <section class="summary-projects">
+        <h2>Otros proyectos de Carlos Guariglia</h2>
+        <div class="summary-project-grid">
+          <article>
+            <h3>Fonotipia</h3>
+            <img src="assets/fonotipia.png" alt="Vista previa de Fonotipia" />
+            <div id="summary-fonotipia-qr" class="summary-qr"></div>
+            <p><a href="${FONOTIPIA_URL}">${FONOTIPIA_URL}</a></p>
+          </article>
+          <article>
+            <h3>Visualizador de Progreso Académico</h3>
+            <img src="assets/progreso.png" alt="Vista previa del Visualizador de Progreso Académico" />
+            <div id="summary-progress-viewer-qr" class="summary-qr"></div>
+            <p><a href="${PROGRESS_VIEWER_URL}">${PROGRESS_VIEWER_URL}</a></p>
+          </article>
+        </div>
+      </section>
     `;
+    renderProjectQr("summary-fonotipia-qr", FONOTIPIA_URL);
+    renderProjectQr("summary-progress-viewer-qr", PROGRESS_VIEWER_URL);
   }
 
   function aliasKey(alias) {

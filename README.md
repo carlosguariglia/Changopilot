@@ -11,7 +11,7 @@ Dinámica interactiva en tiempo real (*Live Code Review*) diseñada para estudia
 
 En el desarrollo de software moderno, la Inteligencia Artificial escribe sintaxis a gran velocidad, pero carece de contexto de negocio, sentido común y responsabilidad profesional. El objetivo de **Changopilot** es entrenar el criterio técnico de los futuros analistas: **nadie puede auditar ni filtrar lo que no entiende**.
 
-Durante la actividad, los participantes asumen el rol de **Tech Leads** y auditan 6 entregables generados por un "Junior IA" que compilan y parecen correctos a simple vista, pero esconden errores críticos antes de salir a producción.
+Durante la actividad, los participantes asumen el rol de **Team Leaders** y auditan 6 entregables generados por un "Junior IA" que compilan y parecen correctos a simple vista, pero esconden errores críticos antes de salir a producción. El equipo del proyecto está formado por Carlos Guariglia como Team Leader y una IA como Junior.
 
 ---
 
@@ -36,7 +36,7 @@ Durante la actividad, los participantes asumen el rol de **Tech Leads** y audita
 * **Resiliencia en el Aula:** Incluye un **Modo Offline** manual en la vista del presentador para continuar la dinámica si falla la conectividad en el instituto.
 * **Moderación de Lobby:** Filtro normalizado de alias ofensivos (incluyendo detección de *leetspeak*) y expulsión en un clic desde la vista del proyector.
 * **Ronda de Práctica:** Antes de las seis rondas puntuables se incluye un ejercicio guiado, con tiempo, que no afecta el ranking.
-* **Resumen de Aprendizaje:** Al finalizar, cada participante puede imprimir o guardar como PDF las preguntas, respuestas, explicaciones y su puntaje.
+* **Resumen de Aprendizaje:** Al finalizar, cada participante puede imprimir o guardar como PDF el mensaje pedagógico, las preguntas técnicas, las respuestas correctas, las explicaciones y moralejas, su puntaje y una página final con enlaces e imágenes de Fonotipia y del Visualizador de Progreso Académico.
 * **Experiencia Mobile:** El código de cada pregunta se muestra abierto y se adapta a pantallas pequeñas.
 
 ---

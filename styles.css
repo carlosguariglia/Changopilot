@@ -615,6 +615,52 @@ input[type="text"], input[type="url"] {
   border-radius: 8px;
   font-size: 0.82rem;
 }
+.summary-talk {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border-left: 4px solid #2563eb;
+  background: #f4f7fb;
+  break-inside: avoid;
+}
+.summary-talk blockquote {
+  margin: 1rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.summary-projects {
+  break-before: page;
+  break-inside: avoid;
+  padding-top: 1rem;
+}
+.summary-project-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  text-align: center;
+}
+.summary-project-grid article {
+  break-inside: avoid;
+  border: 1px solid #d8e0ea;
+  border-radius: 12px;
+  padding: 1rem;
+}
+.summary-project-grid img {
+  display: block;
+  width: 180px;
+  height: 180px;
+  object-fit: cover;
+  margin: 0.75rem auto;
+}
+.summary-project-grid p {
+  overflow-wrap: anywhere;
+  font-size: 0.82rem;
+}
+.summary-qr {
+  display: flex;
+  justify-content: center;
+  min-height: 180px;
+  margin: 0.75rem auto;
+}
 .summary-answer { color: #166534; font-weight: 700; }
 
 @media print {

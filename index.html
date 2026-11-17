@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IA: ¿Copiloto o Chango Automático?</title>
-  <link rel="stylesheet" href="styles.css?v=3.26" />
+  <link rel="stylesheet" href="styles.css?v=3.43" />
   <!-- Resaltado de sintaxis (PrismJS) -->
   <link id="prism-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
@@ -40,7 +40,7 @@
       <p class="subtitle">Revisá los entregables del "Junior IA" antes de que pasen a producción.</p>
       <form id="join-form">
         <label for="alias-input">Tu Alias (máx. 15 caracteres)</label>
-        <input type="text" id="alias-input" maxlength="15" placeholder="Ej: TechLead_99" required autocomplete="off" />
+        <input type="text" id="alias-input" maxlength="15" placeholder="Ej: TeamLeader_99" required autocomplete="off" />
         <p id="alias-error" class="error-msg hidden"></p>
 
         <label>¿En qué año estás?</label>
@@ -59,7 +59,7 @@
     <section id="student-wait" class="view card center-card hidden">
       <div class="player-pill" id="student-badge"></div>
       <h2 id="wait-title">¡Ya estás adentro!</h2>
-      <p id="wait-subtitle" class="subtitle">Mirá la pantalla del proyector. El Tech Lead está por iniciar la primera ronda...</p>
+      <p id="wait-subtitle" class="subtitle">Mirá la pantalla del proyector. El Team Leader está por iniciar la primera ronda...</p>
       <div class="score-box">
         <span>Tu Puntaje</span>
         <strong id="student-score">0 pts</strong>
@@ -109,7 +109,7 @@
     <!-- ==================== VISTA ALUMNO: RESULTADO RONDA ==================== -->
     <section id="student-result" class="view card center-card hidden">
       <div id="result-status-icon" class="status-icon" role="img" aria-label="Resultado correcto"></div>
-      <h2 id="result-status-title">¡Buen ojo de Tech Lead!</h2>
+      <h2 id="result-status-title">¡Buen ojo de Team Leader!</h2>
       <p id="result-points-earned" class="points-delta">+850 pts</p>
       <div class="code-spoiler">
         <strong class="code-label">Código analizado</strong>
@@ -219,7 +219,7 @@
     <!-- ==================== VISTA PODIO FINAL ==================== -->
     <section id="podium-view" class="view card center-card wide-card hidden">
       <span class="tag">Code Review Finalizado</span>
-      <h2><span class="ui-icon" data-icon="trophy"></span>Podio de Tech Leads</h2>
+      <h2><span class="ui-icon" data-icon="trophy"></span>Podio de Team Leaders</h2>
       <div id="podium-container" class="podium-grid"></div>
       <h3><span class="ui-icon" data-icon="medal"></span>Ranking Final por Año</h3>
       <div id="final-year-ranking" class="year-bars"></div>
@@ -289,8 +289,8 @@
     </form>
   </dialog>
 
-  <script src="questions.js?v=3.26"></script>
-  <script src="profanity-filter.js?v=3.26"></script>
-  <script src="app.js?v=3.26"></script>
+  <script src="questions.js?v=3.43"></script>
+  <script src="profanity-filter.js?v=3.43"></script>
+  <script src="app.js?v=3.43"></script>
 </body>
 </html>

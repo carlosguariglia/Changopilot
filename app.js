@@ -117,6 +117,7 @@
           if (
             !isHost ||
             !payload ||
+            state.phase === "PODIUM" ||
             state.phase === "CLOSING" ||
             state.kickedIds.has(payload.id)
           ) return;
@@ -672,10 +673,12 @@
 
   function syncStudentWithHost(payload) {
     if (!state.me) return;
+    const hostPlayer = payload.players && payload.players[state.me.id];
+    if (payload.phase !== "LOBBY" && !hostPlayer) return;
     const wasConfirmedByHost = state.me.confirmedByHost;
 
-    if (payload.players && payload.players[state.me.id]) {
-      state.me.score = payload.players[state.me.id].score;
+    if (hostPlayer) {
+      state.me.score = hostPlayer.score;
       state.me.confirmedByHost = true;
       sessionStorage.setItem("changopilot_me", JSON.stringify(state.me));
       saveStudentProfile(state.me);

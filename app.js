@@ -1,5 +1,5 @@
 (() => {
-  const APP_VERSION = "3.22";
+  const APP_VERSION = "3.23";
   const ROUND_SECONDS = 80;
   const PLAYER_TIMEOUT_MS = 15000;
   const LETTERS = ["A", "B", "C", "D"];
@@ -27,6 +27,7 @@
     phase: "LOBBY", // LOBBY | QUESTION | REVEAL | PODIUM
     roundIndex: 0,
     isPractice: false,
+    hasParticipatedInCurrentGame: false,
     timeLeft: ROUND_SECONDS,
     timerId: null,
     playerCleanupId: null,
@@ -606,6 +607,13 @@
         votedOption: null,
         confirmedByHost: false
       };
+      state.phase = "LOBBY";
+      state.hasParticipatedInCurrentGame = false;
+      $("wait-title").textContent = "¡Ya estás adentro!";
+      $("wait-subtitle").textContent = "Mirá la pantalla del proyector. El Tech Lead está por iniciar la primera ronda...";
+      $("btn-download-summary").classList.add("hidden");
+      $("btn-skip-summary").classList.add("hidden");
+      $("student-fonotipia-invite").classList.add("hidden");
 
       sessionStorage.setItem("changopilot_me", JSON.stringify(state.me));
       saveStudentProfile(state.me);
@@ -675,6 +683,10 @@
     if (!state.me) return;
     const hostPlayer = payload.players && payload.players[state.me.id];
     if (payload.phase !== "LOBBY" && !hostPlayer) return;
+    if (
+      ["REVEAL", "PODIUM", "CLOSING"].includes(payload.phase) &&
+      !state.hasParticipatedInCurrentGame
+    ) return;
     const wasConfirmedByHost = state.me.confirmedByHost;
 
     if (hostPlayer) {
@@ -685,9 +697,11 @@
     }
 
     if (payload.phase === "LOBBY") {
+      state.hasParticipatedInCurrentGame = false;
       $("student-score").textContent = `${state.me.score} pts`;
       showView("student-wait");
     } else if (payload.phase === "QUESTION") {
+      state.hasParticipatedInCurrentGame = true;
       const isPractice = Boolean(payload.isPractice);
       const isNewRound =
         state.roundIndex !== payload.roundIndex ||
